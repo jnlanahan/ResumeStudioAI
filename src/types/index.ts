@@ -1,11 +1,15 @@
+export interface Link {
+  id: string;
+  label: string;
+  url: string;
+}
+
 export interface Contact {
   fullName: string;
-  headline: string;
   email: string;
   phone: string;
   location: string;
-  linkLabel: string;
-  linkUrl: string;
+  links: Link[];
 }
 
 export interface Bullet {
@@ -32,12 +36,19 @@ export interface Education {
   detail: string;
 }
 
+export interface Certification {
+  id: string;
+  name: string;
+  issuer: string;
+  date: string;
+  url?: string;
+}
+
 export interface MasterResume {
   contact: Contact;
-  summary: string;
   experiences: Experience[];
-  skills: string[];
   education: Education[];
+  certifications: Certification[];
   updatedAt: string;
 }
 
@@ -67,6 +78,7 @@ export interface TailoredResume {
   jobTitle: string;
   company: string;
   jobDescription: string;
+  headline: string;
   summary: string;
   experiences: TweakedExperience[];
   skills: string[];
@@ -78,4 +90,25 @@ export interface AppSettings {
   apiKey: string;
   model: string;
   rules: FormatRules;
+}
+
+// Ephemeral tailor workflow types (not persisted)
+export type BulletRating = "strong" | "medium" | "weak";
+
+export interface RatedBullet {
+  bulletId: string;
+  experienceId: string;
+  rating: BulletRating;
+  rationale: string;
+  suggestedTweak?: string;
+}
+
+export interface AnalysisResult {
+  ratedBullets: RatedBullet[];
+  suggestedSkills: string[];
+}
+
+export interface IdentityOption {
+  headline: string;
+  summary: string;
 }

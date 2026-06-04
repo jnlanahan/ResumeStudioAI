@@ -1,11 +1,12 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { FileText, LayoutGrid, Settings as SettingsIcon, Sparkles, UserSquare2 } from "lucide-react";
+import { BookOpen, FileText, LayoutGrid, Settings as SettingsIcon, Sparkles, UserSquare2 } from "lucide-react";
 
 const navItems = [
-  { to: "/profile", label: "Master Profile", icon: UserSquare2 },
-  { to: "/tailor",  label: "Tailor",          icon: Sparkles },
-  { to: "/library", label: "Library",         icon: LayoutGrid },
-  { to: "/settings", label: "Settings",       icon: SettingsIcon },
+  { to: "/profile",      label: "Master Profile", icon: UserSquare2 },
+  { to: "/bullet-bank",  label: "Bullet Bank",    icon: BookOpen },
+  { to: "/tailor",       label: "Tailor",         icon: Sparkles },
+  { to: "/library",      label: "Library",        icon: LayoutGrid },
+  { to: "/settings",     label: "Settings",       icon: SettingsIcon },
 ];
 
 export default function Layout() {

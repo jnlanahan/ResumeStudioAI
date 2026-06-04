@@ -71,8 +71,15 @@ export default function LibraryPage() {
                       }}
                     />
                   ) : (
-                    <div style={{ fontWeight: 700, fontSize: 14, color: "var(--ink)", lineHeight: 1.3, flex: 1 }}>
-                      {r.label || "Untitled"}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: "var(--ink)", lineHeight: 1.3 }}>
+                        {r.label || "Untitled"}
+                      </div>
+                      {r.jobTitle && (
+                        <div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 3 }}>
+                          {r.jobTitle}{r.company ? ` · ${r.company}` : ""}
+                        </div>
+                      )}
                     </div>
                   )}
                   <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>

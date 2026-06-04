@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import ProfilePage from "./pages/Profile";
+import BulletBankPage from "./pages/BulletBank";
 import TailorPage from "./pages/Tailor";
 import LibraryPage from "./pages/Library";
 import SettingsPage from "./pages/Settings";
@@ -12,6 +13,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route index element={<Navigate to="/tailor" replace />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/bullet-bank" element={<BulletBankPage />} />
           <Route path="/tailor" element={<TailorPage />} />
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/settings" element={<SettingsPage />} />

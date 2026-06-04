@@ -2,8 +2,10 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type {
   AppSettings,
+  Certification,
   Education,
   Experience,
+  Link,
   MasterResume,
   TailoredResume,
 } from "@/types";
@@ -25,6 +27,12 @@ interface AppState {
   addEducation: () => void;
   updateEducation: (id: string, patch: Partial<Education>) => void;
   removeEducation: (id: string) => void;
+  addLink: () => void;
+  updateLink: (id: string, patch: Partial<Link>) => void;
+  removeLink: (id: string) => void;
+  addCertification: () => void;
+  updateCertification: (id: string, patch: Partial<Certification>) => void;
+  removeCertification: (id: string) => void;
 
   saveTailored: (resume: TailoredResume) => void;
   removeTailored: (id: string) => void;
@@ -36,17 +44,14 @@ interface AppState {
 const blankMaster = (): MasterResume => ({
   contact: {
     fullName: "",
-    headline: "",
     email: "",
     phone: "",
     location: "",
-    linkLabel: "",
-    linkUrl: "",
+    links: [],
   },
-  summary: "",
   experiences: [],
-  skills: [],
   education: [],
+  certifications: [],
   updatedAt: new Date().toISOString(),
 });
 
@@ -195,6 +200,72 @@ export const useStore = create<AppState>()(
           },
         })),
 
+      addLink: () =>
+        set((s) => ({
+          master: {
+            ...s.master,
+            contact: {
+              ...s.master.contact,
+              links: [...s.master.contact.links, { id: newId(), label: "", url: "" }],
+            },
+            updatedAt: new Date().toISOString(),
+          },
+        })),
+      updateLink: (id, patch) =>
+        set((s) => ({
+          master: {
+            ...s.master,
+            contact: {
+              ...s.master.contact,
+              links: s.master.contact.links.map((l) =>
+                l.id === id ? { ...l, ...patch } : l
+              ),
+            },
+            updatedAt: new Date().toISOString(),
+          },
+        })),
+      removeLink: (id) =>
+        set((s) => ({
+          master: {
+            ...s.master,
+            contact: {
+              ...s.master.contact,
+              links: s.master.contact.links.filter((l) => l.id !== id),
+            },
+            updatedAt: new Date().toISOString(),
+          },
+        })),
+
+      addCertification: () =>
+        set((s) => ({
+          master: {
+            ...s.master,
+            certifications: [
+              ...s.master.certifications,
+              { id: newId(), name: "", issuer: "", date: "", url: "" },
+            ],
+            updatedAt: new Date().toISOString(),
+          },
+        })),
+      updateCertification: (id, patch) =>
+        set((s) => ({
+          master: {
+            ...s.master,
+            certifications: s.master.certifications.map((c) =>
+              c.id === id ? { ...c, ...patch } : c
+            ),
+            updatedAt: new Date().toISOString(),
+          },
+        })),
+      removeCertification: (id) =>
+        set((s) => ({
+          master: {
+            ...s.master,
+            certifications: s.master.certifications.filter((c) => c.id !== id),
+            updatedAt: new Date().toISOString(),
+          },
+        })),
+
       saveTailored: (resume) =>
         set((s) => {
           const existingIdx = s.library.findIndex((r) => r.id === resume.id);
@@ -222,8 +293,8 @@ export const useStore = create<AppState>()(
         })),
     }),
     {
-      name: "resume-studio-ai-v1",
-      version: 1,
+      name: "resume-studio-ai-v2",
+      version: 2,
     }
   )
 );

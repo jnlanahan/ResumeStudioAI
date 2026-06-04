@@ -8,16 +8,12 @@ interface Props {
 }
 
 export function ResumeDocument({ master, tailored, rules }: Props) {
-  const summary = tailored?.summary || master.summary;
-  const skills = (tailored?.skills && tailored.skills.length
-    ? tailored.skills
-    : master.skills
-  ).slice(0, rules.maxSkills);
+  const headline = tailored?.headline ?? "";
+  const summary = tailored?.summary ?? "";
+  const skills = (tailored?.skills ?? []).slice(0, rules.maxSkills);
 
   const experiences = master.experiences.map((exp) => {
-    const tweaks = tailored?.experiences.find(
-      (e) => e.experienceId === exp.id
-    );
+    const tweaks = tailored?.experiences.find((e) => e.experienceId === exp.id);
     let bullets: { id: string; text: string }[];
     if (tweaks && tweaks.bullets.length) {
       bullets = tweaks.bullets
@@ -32,33 +28,37 @@ export function ResumeDocument({ master, tailored, rules }: Props) {
     return { exp, bullets };
   });
 
+  const contactParts: (string | React.ReactElement)[] = [
+    master.contact.location,
+    master.contact.email,
+    master.contact.phone,
+    ...master.contact.links.map((l) =>
+      l.url ? (
+        <a key={l.id} href={l.url} target="_blank" rel="noreferrer">
+          {l.label || l.url}
+        </a>
+      ) : l.label ? (
+        <span key={l.id}>{l.label}</span>
+      ) : null
+    ),
+  ].filter(Boolean) as (string | React.ReactElement)[];
+
   return (
     <article className="resume-page" id="resume-document">
       <header>
         <h1>{master.contact.fullName || "Your Name"}</h1>
-        {master.contact.headline && (
-          <p
-            style={{
-              marginTop: "2pt",
-              fontSize: "10.5pt",
-              color: "#334155",
-              fontWeight: 500,
-            }}
-          >
-            {master.contact.headline}
+        {headline && (
+          <p style={{ marginTop: "2pt", fontSize: "10.5pt", color: "#334155", fontWeight: 500 }}>
+            {headline}
           </p>
         )}
         <p className="contact">
-          {[
-            master.contact.location,
-            master.contact.email,
-            master.contact.phone,
-            master.contact.linkUrl
-              ? master.contact.linkLabel || master.contact.linkUrl
-              : null,
-          ]
-            .filter(Boolean)
-            .join("  •  ")}
+          {contactParts.map((part, i) => (
+            <span key={i}>
+              {part}
+              {i < contactParts.length - 1 && "  •  "}
+            </span>
+          ))}
         </p>
       </header>
 
@@ -69,7 +69,7 @@ export function ResumeDocument({ master, tailored, rules }: Props) {
         </section>
       )}
 
-      {experiences.length > 0 && (
+      {experiences.some(({ bullets }) => bullets.length > 0) && (
         <section>
           <h2>Experience</h2>
           {experiences.map(({ exp, bullets }) => (
@@ -114,13 +114,28 @@ export function ResumeDocument({ master, tailored, rules }: Props) {
                   {ed.degree || "Degree"}
                   {ed.school ? ` · ${ed.school}` : ""}
                 </h3>
-                <span className="role-meta">
-                  {formatRange(ed.startDate, ed.endDate)}
-                </span>
+                <span className="role-meta">{formatRange(ed.startDate, ed.endDate)}</span>
               </div>
               {ed.detail && (
+                <p style={{ marginTop: "2pt", fontSize: "10pt", color: "#334155" }}>{ed.detail}</p>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
+
+      {master.certifications.length > 0 && (
+        <section>
+          <h2>Certifications</h2>
+          {master.certifications.map((cert) => (
+            <div className="experience-block" key={cert.id}>
+              <div className="role-row">
+                <h3>{cert.name || "Certification"}{cert.issuer ? ` · ${cert.issuer}` : ""}</h3>
+                <span className="role-meta">{cert.date}</span>
+              </div>
+              {cert.url && (
                 <p style={{ marginTop: "2pt", fontSize: "10pt", color: "#334155" }}>
-                  {ed.detail}
+                  <a href={cert.url} target="_blank" rel="noreferrer" style={{ color: "#3b82f6" }}>Verify credential</a>
                 </p>
               )}
             </div>
