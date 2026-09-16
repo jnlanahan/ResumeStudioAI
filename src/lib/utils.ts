@@ -13,6 +13,7 @@ export function newId(): string {
 }
 
 export function formatRange(start: string, end: string): string {
+  if (!start && !end) return "";
   const left = formatMonthYear(start);
   const right = end ? formatMonthYear(end) : "Present";
   if (!left && !right) return "";
@@ -22,7 +23,9 @@ export function formatRange(start: string, end: string): string {
 
 function formatMonthYear(input: string): string {
   if (!input) return "";
-  const date = new Date(input.length === 7 ? `${input}-01` : input);
+  // Parse YYYY-MM(-DD) as local time; `new Date("2026-01")` is UTC and shifts a month back in US zones.
+  const m = /^(\d{4})-(\d{2})/.exec(input);
+  const date = m ? new Date(Number(m[1]), Number(m[2]) - 1, 1) : new Date(input);
   if (Number.isNaN(date.getTime())) return input;
   return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }

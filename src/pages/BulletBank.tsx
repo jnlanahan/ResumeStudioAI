@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Briefcase, ChevronDown, ChevronRight, Plus, Trash2, X } from "lucide-react";
+import { ArrowUp, Briefcase, ChevronDown, ChevronRight, FileUp, Plus, Trash2, X } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { PageHeader } from "@/components/PageHeader";
+import { ImportResumeModal } from "@/components/ImportResumeModal";
 import { formatRange, cn } from "@/lib/utils";
+import type { Bullet } from "@/types";
 
 export default function BulletBankPage() {
   const master = useStore((s) => s.master);
@@ -13,8 +15,13 @@ export default function BulletBankPage() {
   const addBullet = useStore((s) => s.addBullet);
   const updateBullet = useStore((s) => s.updateBullet);
   const removeBullet = useStore((s) => s.removeBullet);
+  const addVariant = useStore((s) => s.addVariant);
+  const updateVariant = useStore((s) => s.updateVariant);
+  const removeVariant = useStore((s) => s.removeVariant);
+  const promoteVariant = useStore((s) => s.promoteVariant);
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [importing, setImporting] = useState(false);
   const prevLengthRef = useRef(master.experiences.length);
 
   // Auto-expand newly added experiences
@@ -33,16 +40,28 @@ export default function BulletBankPage() {
       return next;
     });
 
+  const totalBullets = master.experiences.reduce((n, e) => n + e.bullets.filter((b) => b.text.trim()).length, 0);
+  const totalVariants = master.experiences.reduce((n, e) => n + e.bullets.reduce((m, b) => m + b.variants.length, 0), 0);
+
   return (
     <>
       <PageHeader
         eyebrow="Bullet Bank"
         title="Your experience & bullets"
-        description="Every role and bullet you've ever written. The tailoring wizard picks the best ones for each job — capture them all here."
+        description={
+          totalBullets
+            ? `${totalBullets} bullets across ${master.experiences.length} roles${totalVariants ? `, with ${totalVariants} alternate phrasings` : ""}. Import another resume to grow the bank.`
+            : "Every role and bullet you've ever written. Import a resume to start, then add or edit by hand."
+        }
         actions={
-          <button className="btn btn-gold btn-sm" onClick={addExperience}>
-            <Plus size={14} /> Add role
-          </button>
+          <>
+            <button className="btn btn-sm" onClick={() => setImporting(true)}>
+              <FileUp size={14} /> Import resume
+            </button>
+            <button className="btn btn-gold btn-sm" onClick={addExperience}>
+              <Plus size={14} /> Add role
+            </button>
+          </>
         }
       />
 
@@ -57,16 +76,22 @@ export default function BulletBankPage() {
             </div>
             <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", marginBottom: 6 }}>No roles yet</div>
             <p style={{ fontSize: 13, color: "var(--ink-3)", margin: "0 0 18px" }}>
-              Add your first role and start building your bullet bank.
+              Import a resume PDF and Claude will build your bank, or add your first role by hand.
             </p>
-            <button className="btn btn-gold btn-sm" onClick={addExperience}>
-              <Plus size={14} /> Add your first role
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button className="btn btn-gold btn-sm" onClick={() => setImporting(true)}>
+                <FileUp size={14} /> Import resume
+              </button>
+              <button className="btn btn-sm" onClick={addExperience}>
+                <Plus size={14} /> Add a role
+              </button>
+            </div>
           </div>
         ) : (
           master.experiences.map((exp) => {
             const isOpen = expanded.has(exp.id);
             const dateRange = formatRange(exp.startDate, exp.endDate);
+            const count = exp.bullets.filter((b) => b.text.trim()).length;
             return (
               <div key={exp.id} className="panel">
                 {/* Role header */}
@@ -93,7 +118,7 @@ export default function BulletBankPage() {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                     <span style={{ fontSize: 12, color: "var(--ink-3)" }}>
-                      {exp.bullets.filter((b) => b.text.trim()).length} bullet{exp.bullets.filter((b) => b.text.trim()).length !== 1 ? "s" : ""}
+                      {count} bullet{count !== 1 ? "s" : ""}
                     </span>
                     <button
                       onClick={(e) => {
@@ -157,10 +182,14 @@ export default function BulletBankPage() {
                       {exp.bullets.map((b) => (
                         <BulletEditor
                           key={b.id}
-                          text={b.text}
+                          bullet={b}
                           maxChars={rules.maxBulletChars}
                           onChange={(text) => updateBullet(exp.id, b.id, text)}
                           onRemove={() => removeBullet(exp.id, b.id)}
+                          onAddVariant={() => addVariant(exp.id, b.id, "")}
+                          onUpdateVariant={(i, text) => updateVariant(exp.id, b.id, i, text)}
+                          onRemoveVariant={(i) => removeVariant(exp.id, b.id, i)}
+                          onPromoteVariant={(i) => promoteVariant(exp.id, b.id, i)}
                         />
                       ))}
                       <button
@@ -178,22 +207,35 @@ export default function BulletBankPage() {
           })
         )}
       </div>
+
+      {importing && <ImportResumeModal onClose={() => setImporting(false)} />}
     </>
   );
 }
 
 function BulletEditor({
-  text,
+  bullet,
   maxChars,
   onChange,
   onRemove,
+  onAddVariant,
+  onUpdateVariant,
+  onRemoveVariant,
+  onPromoteVariant,
 }: {
-  text: string;
+  bullet: Bullet;
   maxChars: number;
   onChange: (v: string) => void;
   onRemove: () => void;
+  onAddVariant: () => void;
+  onUpdateVariant: (index: number, v: string) => void;
+  onRemoveVariant: (index: number) => void;
+  onPromoteVariant: (index: number) => void;
 }) {
+  const { text, variants } = bullet;
+  const [showVariants, setShowVariants] = useState(false);
   const over = text.length > maxChars;
+  const open = showVariants || variants.some((v) => !v.trim());
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
       <span style={{ marginTop: 14, width: 6, height: 6, borderRadius: "50%", background: "var(--ink-3)", flexShrink: 0 }} />
@@ -206,9 +248,45 @@ function BulletEditor({
           onChange={(e) => onChange(e.target.value)}
           placeholder="Action verb + what you did + measurable outcome…"
         />
-        <div style={{ marginTop: 4, fontSize: 11, color: over ? "var(--warn)" : "var(--ink-3)" }}>
-          {text.length}/{maxChars}{over && " — too long, will be trimmed"}
+        <div style={{ marginTop: 4, display: "flex", alignItems: "center", gap: 12, fontSize: 11, color: over ? "var(--warn)" : "var(--ink-3)" }}>
+          <span>
+            {text.length}/{maxChars}{over && " — too long, will be trimmed"}
+          </span>
+          <button
+            onClick={() => setShowVariants((v) => !v)}
+            style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: variants.length ? "var(--accent)" : "var(--ink-3)", fontSize: 11, fontWeight: 600 }}
+          >
+            {variants.length
+              ? `${variants.length} alternate phrasing${variants.length !== 1 ? "s" : ""} ${open ? "▾" : "▸"}`
+              : "+ alternate phrasing"}
+          </button>
         </div>
+
+        {(open || (!variants.length && showVariants)) && (
+          <div style={{ marginTop: 8, marginLeft: 8, paddingLeft: 10, borderLeft: "2px solid var(--line)", display: "flex", flexDirection: "column", gap: 6 }}>
+            {variants.map((v, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+                <textarea
+                  className="field-textarea-native"
+                  style={{ minHeight: 38, fontSize: 12.5 }}
+                  rows={2}
+                  value={v}
+                  onChange={(e) => onUpdateVariant(i, e.target.value)}
+                  placeholder="Same accomplishment, different wording…"
+                />
+                <button className="b-act" title="Make this the primary wording" onClick={() => onPromoteVariant(i)} style={{ marginTop: 4 }}>
+                  <ArrowUp size={13} />
+                </button>
+                <button className="b-act danger" title="Remove phrasing" onClick={() => onRemoveVariant(i)} style={{ marginTop: 4 }}>
+                  <X size={13} />
+                </button>
+              </div>
+            ))}
+            <button className="btn btn-ghost btn-sm" style={{ alignSelf: "flex-start" }} onClick={() => { onAddVariant(); setShowVariants(true); }}>
+              <Plus size={13} /> Add phrasing
+            </button>
+          </div>
+        )}
       </div>
       <button
         onClick={onRemove}

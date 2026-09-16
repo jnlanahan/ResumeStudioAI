@@ -10,9 +10,11 @@ import type {
   IdentityOption,
   RatedBullet,
   TailoredResume,
+  TemplateId,
   TweakedExperience,
 } from "@/types";
 import { cn, newId } from "@/lib/utils";
+import { TEMPLATES } from "@/templates";
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -138,6 +140,7 @@ export default function TailorPage() {
 
   // Step 5
   const [resumeLabel, setResumeLabel] = useState("");
+  const [template, setTemplate] = useState<TemplateId>(settings.template);
   const [saved, setSaved] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -195,7 +198,7 @@ export default function TailorPage() {
           const exp = master.experiences.find((e) => e.id === rb.experienceId);
           return { role: exp?.role ?? "", company: exp?.company ?? "", text: effectiveText(rb) };
         });
-      const options = await generateIdentity({ jd, jobTitle, company, selectedBullets, settings });
+      const options = await generateIdentity({ jd, jobTitle, company, selectedBullets, masterSummary: master.summary, settings });
       setIdentityOptions(options);
       setSelectedIdentityIdx(0);
       if (options[0]) {
@@ -241,10 +244,11 @@ export default function TailorPage() {
       experiences,
       skills,
       notes: "",
+      template,
       createdAt: new Date().toISOString(),
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [analysis, included, tweakAccepted, customHeadline, customSummary, skills, jobTitle, company, jd]);
+  }, [analysis, included, tweakAccepted, customHeadline, customSummary, skills, jobTitle, company, jd, template]);
 
   const handleSave = () => {
     saveTailored({
@@ -566,6 +570,20 @@ export default function TailorPage() {
                 Add
               </button>
             </div>
+            {master.skills.some((s) => !skills.includes(s)) && (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 6 }}>
+                  From your profile — click to add
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {master.skills.filter((s) => !skills.includes(s)).map((s) => (
+                    <button key={s} className="chip" style={{ opacity: 0.7 }} onClick={() => setSkills((prev) => [...prev, s])}>
+                      + {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {skills.length === 0 ? (
               <p style={{ fontSize: 13, color: "var(--ink-3)" }}>No skills yet — add some above.</p>
             ) : (
@@ -594,8 +612,22 @@ export default function TailorPage() {
         {/* ── Step 5: Preview & Save ── */}
         {currentStep === 5 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <div className="panel panel-pad" style={{ display: "flex", gap: 14, alignItems: "center" }}>
-              <FieldGroup label="Name this resume" style={{ flex: 1 }}>
+            <div className="panel panel-pad" style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+              <FieldGroup label="Template" style={{ flexShrink: 0 }}>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {TEMPLATES.map((t) => (
+                    <button
+                      key={t.id}
+                      className={cn("btn btn-sm", template === t.id && "btn-gold")}
+                      onClick={() => setTemplate(t.id)}
+                      title={t.description}
+                    >
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
+              </FieldGroup>
+              <FieldGroup label="Name this resume" style={{ flex: 1, minWidth: 220 }}>
                 <input
                   className="field-native"
                   placeholder={`${jobTitle}${company ? " — " + company : ""}` || "My tailored resume"}
