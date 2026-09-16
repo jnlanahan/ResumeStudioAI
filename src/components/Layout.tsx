@@ -1,4 +1,7 @@
-import { NavLink, Outlet } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { BookOpen, FileText, LayoutGrid, Settings as SettingsIcon, Sparkles, UserSquare2 } from "lucide-react";
 
 const navItems = [
@@ -9,7 +12,8 @@ const navItems = [
   { to: "/settings",     label: "Settings",       icon: SettingsIcon },
 ];
 
-export default function Layout() {
+export default function Layout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   return (
     <div className="app">
       <aside className="sidebar no-print">
@@ -25,14 +29,14 @@ export default function Layout() {
         <nav className="nav">
           <div className="nav-label">Workspace</div>
           {navItems.map((item) => (
-            <NavLink
+            <Link
               key={item.to}
-              to={item.to}
-              className={({ isActive }) => "nav-item" + (isActive ? " active" : "")}
+              href={item.to}
+              className={"nav-item" + (pathname.startsWith(item.to) ? " active" : "")}
             >
               <item.icon className="nav-ic" size={17} strokeWidth={2} />
               <span>{item.label}</span>
-            </NavLink>
+            </Link>
           ))}
         </nav>
 
@@ -43,7 +47,7 @@ export default function Layout() {
       </aside>
 
       <div className="main">
-        <Outlet />
+        {children}
       </div>
     </div>
   );

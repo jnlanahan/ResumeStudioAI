@@ -305,6 +305,8 @@ export const useStore = create<AppState>()(
     {
       name: "resume-studio-ai-v2",
       version: 3,
+      // Server renders a blank store; the client rehydrates after mount (see app/(app)/layout.tsx).
+      skipHydration: true,
       migrate: (persisted, version) => {
         const state = persisted as Partial<AppState>;
         if (version < 3) {

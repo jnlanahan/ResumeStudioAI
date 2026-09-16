@@ -5,3 +5,5 @@ dist/
 .playwright-mcp/
 .env
 .env.*
+.next/
+*.tsbuildinfo

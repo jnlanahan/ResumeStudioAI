@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Bookmark, Check, ChevronRight, Copy, Printer, Sparkles, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { useStore } from "@/store/useStore";
 import { PageHeader } from "@/components/PageHeader";
 import { ResumeDocument } from "@/components/ResumeDocument";
@@ -345,9 +345,9 @@ export default function TailorPage() {
             {(!hasBullets || !hasKey) && (
               <div style={{ marginBottom: 20, padding: "12px 16px", borderRadius: 10, background: "var(--accent-soft)", border: "1px solid var(--accent-line)", fontSize: 13, color: "var(--ink-2)" }}>
                 {!hasBullets ? (
-                  <>Build your <Link to="/bullet-bank" style={{ color: "var(--accent)", textDecoration: "underline" }}>Bullet Bank</Link> first.</>
+                  <>Build your <Link href="/bullet-bank" style={{ color: "var(--accent)", textDecoration: "underline" }}>Bullet Bank</Link> first.</>
                 ) : (
-                  <>Add your API key in <Link to="/settings" style={{ color: "var(--accent)", textDecoration: "underline" }}>Settings</Link>.</>
+                  <>Add your API key in <Link href="/settings" style={{ color: "var(--accent)", textDecoration: "underline" }}>Settings</Link>.</>
                 )}
               </div>
             )}
