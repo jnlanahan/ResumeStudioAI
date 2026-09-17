@@ -6,6 +6,7 @@ import type {
   Certification,
   Education,
   Experience,
+  IngestRecord,
   Link,
   MasterResume,
   TailoredResume,
@@ -19,6 +20,10 @@ interface AppState {
   master: MasterResume;
   library: TailoredResume[];
   settings: AppSettings;
+  sources: IngestRecord[];
+
+  addSource: (record: IngestRecord) => void;
+  removeSource: (id: string) => void;
 
   setMaster: (master: MasterResume) => void;
   updateMaster: (patch: Partial<MasterResume>) => void;
@@ -121,6 +126,10 @@ export const useStore = create<AppState>()(
       master: blankMaster(),
       library: [],
       settings: defaultSettings(),
+      sources: [],
+
+      addSource: (record) => set((s) => ({ sources: [record, ...s.sources] })),
+      removeSource: (id) => set((s) => ({ sources: s.sources.filter((r) => r.id !== id) })),
 
       setMaster: (master) => set({ master: touch(master) }),
       updateMaster: (patch) => set((s) => ({ master: touch({ ...s.master, ...patch }) })),
@@ -299,12 +308,12 @@ export const useStore = create<AppState>()(
     }),
     {
       name: "resume-studio-ai-v2",
-      version: 4,
+      version: 5,
       // Server renders a blank store; the client rehydrates after mount (see app/(app)/layout.tsx).
       skipHydration: true,
       migrate: (persisted, version) => {
         const state = persisted as Partial<AppState> & { settings?: AppSettings & { apiKey?: string } };
-        if (version < 4) {
+        if (version < 5) {
           const { apiKey: _dropped, ...rest } = state.settings ?? ({} as AppSettings & { apiKey?: string });
           void _dropped; // v4: the Anthropic key moved to the server (ANTHROPIC_API_KEY)
           const settings: AppSettings = { ...defaultSettings(), ...rest };
@@ -314,6 +323,7 @@ export const useStore = create<AppState>()(
             master: normalizeMaster(state.master),
             library: (state.library ?? []).map((r) => ({ ...r, template: r.template ?? "modern" })),
             settings,
+            sources: state.sources ?? [],
           };
         }
         return state;

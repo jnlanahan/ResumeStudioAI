@@ -133,12 +133,23 @@ export interface IdentityOption {
 
 // ─── Resume import (ephemeral) ───────────────────────────────────────────────
 
-/** What Claude extracts from an uploaded resume, already matched against the existing bank. */
+/** What Claude extracts from any uploaded source, already matched against the existing bank. */
 export interface ImportedBullet {
   /** id of an existing bullet this is a rewording of, or null if new */
   matchBulletId: string | null;
   text: string;
   variants: string[];
+  /** true when the wording was authored from prose (e.g. an evaluation) rather than copied verbatim */
+  drafted: boolean;
+}
+
+export type SourceKind = "resume" | "evaluation" | "notes" | "other";
+
+export interface IngestQuestion {
+  id: string;
+  question: string;
+  /** optional fixed choices; empty = free text */
+  choices: string[];
 }
 
 export interface ImportedExperience {
@@ -153,6 +164,11 @@ export interface ImportedExperience {
 }
 
 export interface ImportedResume {
+  sourceType: SourceKind;
+  /** plain-language one-liner: what Claude found in this source */
+  sourceSummary: string;
+  /** things Claude needs from the user before it can place information confidently */
+  questions: IngestQuestion[];
   contact: {
     fullName: string;
     email: string;
@@ -175,6 +191,18 @@ export interface ImportedResume {
   skills: string[];
   tools: string[];
   additional: string[];
+}
+
+/** One thing the user has fed into the app, kept for history. */
+export interface IngestRecord {
+  id: string;
+  name: string;
+  kind: SourceKind;
+  addedAt: string;
+  roles: number;
+  bullets: number;
+  variants: number;
+  profileFields: number;
 }
 
 /** Human-readable record of what an import will change, shown before applying. */

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { jsonRoute, modelField } from "@/server/http";
-import { importResume } from "@/server/anthropic";
-import type { MasterResume } from "@/types";
+import { ingest } from "@/server/anthropic";
+import type { ImportedResume, MasterResume } from "@/types";
 
 export const maxDuration = 300;
 
@@ -15,8 +15,11 @@ const Body = z.object({
     }),
     z.object({ kind: z.literal("text"), text: z.string().min(1) }),
   ]),
+  note: z.string().default(""),
   master: z.custom<MasterResume>((v) => typeof v === "object" && v !== null && Array.isArray((v as MasterResume).experiences)),
   model: modelField,
+  prior: z.custom<ImportedResume>((v) => typeof v === "object" && v !== null).nullable().optional(),
+  answers: z.record(z.string(), z.string()).optional(),
 });
 
-export const POST = jsonRoute(Body, importResume);
+export const POST = jsonRoute(Body, ingest);

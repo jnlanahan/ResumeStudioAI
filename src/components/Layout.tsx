@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, FileText, LayoutGrid, Settings as SettingsIcon, Sparkles, UserSquare2 } from "lucide-react";
+import { BookOpen, FileText, FileUp, LayoutGrid, Settings as SettingsIcon, Sparkles, UserSquare2 } from "lucide-react";
 
 const navItems = [
+  { to: "/import",       label: "Import",         icon: FileUp },
   { to: "/profile",      label: "Master Profile", icon: UserSquare2 },
   { to: "/bullet-bank",  label: "Bullet Bank",    icon: BookOpen },
   { to: "/tailor",       label: "Tailor",         icon: Sparkles },

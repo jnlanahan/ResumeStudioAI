@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { ArrowUp, Briefcase, ChevronDown, ChevronRight, FileUp, Plus, Trash2, X } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { PageHeader } from "@/components/PageHeader";
-import { ImportResumeModal } from "@/components/ImportResumeModal";
 import { formatRange, cn } from "@/lib/utils";
 import type { Bullet } from "@/types";
 
@@ -21,7 +21,6 @@ export default function BulletBankPage() {
   const promoteVariant = useStore((s) => s.promoteVariant);
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const [importing, setImporting] = useState(false);
   const prevLengthRef = useRef(master.experiences.length);
 
   // Auto-expand newly added experiences
@@ -50,14 +49,14 @@ export default function BulletBankPage() {
         title="Your experience & bullets"
         description={
           totalBullets
-            ? `${totalBullets} bullets across ${master.experiences.length} roles${totalVariants ? `, with ${totalVariants} alternate phrasings` : ""}. Import another resume to grow the bank.`
-            : "Every role and bullet you've ever written. Import a resume to start, then add or edit by hand."
+            ? `${totalBullets} bullets across ${master.experiences.length} roles${totalVariants ? `, with ${totalVariants} alternate phrasings` : ""}. Import another document to grow the bank.`
+            : "Every role and bullet you've ever written. Import a resume or evaluation to start, then add or edit by hand."
         }
         actions={
           <>
-            <button className="btn btn-sm" onClick={() => setImporting(true)}>
-              <FileUp size={14} /> Import resume
-            </button>
+            <Link href="/import" className="btn btn-sm">
+              <FileUp size={14} /> Import
+            </Link>
             <button className="btn btn-gold btn-sm" onClick={addExperience}>
               <Plus size={14} /> Add role
             </button>
@@ -76,12 +75,12 @@ export default function BulletBankPage() {
             </div>
             <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", marginBottom: 6 }}>No roles yet</div>
             <p style={{ fontSize: 13, color: "var(--ink-3)", margin: "0 0 18px" }}>
-              Import a resume PDF and Claude will build your bank, or add your first role by hand.
+              Import a resume, evaluation, or notes and Claude will build your bank, or add your first role by hand.
             </p>
             <div style={{ display: "flex", gap: 8 }}>
-              <button className="btn btn-gold btn-sm" onClick={() => setImporting(true)}>
-                <FileUp size={14} /> Import resume
-              </button>
+              <Link href="/import" className="btn btn-gold btn-sm">
+                <FileUp size={14} /> Import
+              </Link>
               <button className="btn btn-sm" onClick={addExperience}>
                 <Plus size={14} /> Add a role
               </button>
@@ -207,8 +206,6 @@ export default function BulletBankPage() {
           })
         )}
       </div>
-
-      {importing && <ImportResumeModal onClose={() => setImporting(false)} />}
     </>
   );
 }

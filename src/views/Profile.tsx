@@ -1,8 +1,8 @@
 import { useState } from "react";
+import Link from "next/link";
 import { Award, FileUp, GraduationCap, Info, Link2, Plus, Trash2, User, Wrench, X } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { PageHeader } from "@/components/PageHeader";
-import { ImportResumeModal } from "@/components/ImportResumeModal";
 
 export default function ProfilePage() {
   const master = useStore((s) => s.master);
@@ -16,21 +16,19 @@ export default function ProfilePage() {
   const addCertification = useStore((s) => s.addCertification);
   const updateCertification = useStore((s) => s.updateCertification);
   const removeCertification = useStore((s) => s.removeCertification);
-  const [importing, setImporting] = useState(false);
 
   return (
     <>
       <PageHeader
         eyebrow="Master Profile"
         title="Your permanent info"
-        description="Contact details, education, certifications, skills — the parts that don't change per job. Import a resume to fill this and your Bullet Bank in one go."
+        description="Contact details, education, certifications, skills — the parts that don't change per job. Import a resume or any document to fill this and your Bullet Bank in one go."
         actions={
-          <button className="btn btn-gold btn-sm" onClick={() => setImporting(true)}>
-            <FileUp size={14} /> Import resume
-          </button>
+          <Link href="/import" className="btn btn-gold btn-sm">
+            <FileUp size={14} /> Import
+          </Link>
         }
       />
-      {importing && <ImportResumeModal onClose={() => setImporting(false)} />}
 
       <div className="canvas" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         {/* Contact */}

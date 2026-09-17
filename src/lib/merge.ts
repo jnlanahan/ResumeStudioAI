@@ -81,7 +81,7 @@ export function mergeImport(master: MasterResume, imported: ImportedResume): { m
         }
       } else if (!exp.bullets.some((b) => norm(b.text) === norm(text) || hasText(b.variants, text))) {
         exp.bullets.push({ id: newId(), text, variants: union([], ib.variants.filter((v) => norm(v) !== norm(text))) });
-        changes.push({ kind: "new-bullet", label: roleLabel, detail: text });
+        changes.push({ kind: "new-bullet", label: roleLabel, detail: ib.drafted ? `(drafted) ${text}` : text });
       }
     }
   }

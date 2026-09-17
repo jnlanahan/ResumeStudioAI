@@ -35,8 +35,18 @@ export function generateIdentity({ settings, ...rest }: IdentityInput): Promise<
   return post("/api/ai/identity", { ...rest, model: settings.model, rules: settings.rules });
 }
 
-export function importResume(source: ImportSource, master: MasterResume, settings: AppSettings): Promise<ImportedResume> {
-  return post("/api/ai/import", { source, master, model: settings.model });
+export interface IngestArgs {
+  source: ImportSource;
+  note: string;
+  master: MasterResume;
+  settings: AppSettings;
+  prior?: ImportedResume | null;
+  answers?: Record<string, string>;
+}
+
+/** Turn any career document into a reviewable proposal (see server/anthropic.ts → ingest). */
+export function ingest({ settings, ...rest }: IngestArgs): Promise<ImportedResume> {
+  return post("/api/ai/ingest", { ...rest, model: settings.model });
 }
 
 // ─── File readers ────────────────────────────────────────────────────────────
