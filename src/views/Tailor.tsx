@@ -147,7 +147,6 @@ export default function TailorPage() {
   const [error, setError] = useState<string | null>(null);
 
   const hasBullets = master.experiences.some((e) => e.bullets.some((b) => b.text.trim()));
-  const hasKey = settings.apiKey.trim().length > 0;
 
   const goToStep = (s: Step) => {
     setCurrentStep(s);
@@ -342,13 +341,9 @@ export default function TailorPage() {
         {/* ── Step 1: Job Description ── */}
         {currentStep === 1 && (
           <StepPanel>
-            {(!hasBullets || !hasKey) && (
+            {!hasBullets && (
               <div style={{ marginBottom: 20, padding: "12px 16px", borderRadius: 10, background: "var(--accent-soft)", border: "1px solid var(--accent-line)", fontSize: 13, color: "var(--ink-2)" }}>
-                {!hasBullets ? (
-                  <>Build your <Link href="/bullet-bank" style={{ color: "var(--accent)", textDecoration: "underline" }}>Bullet Bank</Link> first.</>
-                ) : (
-                  <>Add your API key in <Link href="/settings" style={{ color: "var(--accent)", textDecoration: "underline" }}>Settings</Link>.</>
-                )}
+                Build your <Link href="/bullet-bank" style={{ color: "var(--accent)", textDecoration: "underline" }}>Bullet Bank</Link> first.
               </div>
             )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
@@ -381,7 +376,7 @@ export default function TailorPage() {
             <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
               <button
                 className="btn btn-gold"
-                disabled={!jd.trim() || !hasBullets || !hasKey || loading}
+                disabled={!jd.trim() || !hasBullets || loading}
                 onClick={handleAnalyze}
               >
                 {loading ? "Analyzing…" : <><Sparkles size={15} /> Analyze my bullets</>}

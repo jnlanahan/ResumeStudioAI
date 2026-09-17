@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Tailor your resume to any job posting \u2014 wording tweaks only, fixed format, every time.",
+  "description": "Tailor your resume to any job posting — wording tweaks only, fixed format, every time.",
   "scripts": {
     "dev": "next dev -p 3022",
     "build": "next build",
@@ -16,6 +16,7 @@
     "clsx": "^2.1.0",
     "framer-motion": "^13.3.0",
     "lucide-react": "^0.344.0",
+    "mammoth": "^1.12.3",
     "next": "^16.3.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

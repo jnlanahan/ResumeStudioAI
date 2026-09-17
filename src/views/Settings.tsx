@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Download, Eye, EyeOff, LayoutTemplate, ListOrdered, Lock, Save, Sparkles, Upload } from "lucide-react";
+import { Download, LayoutTemplate, ListOrdered, Lock, Sparkles, Upload } from "lucide-react";
 import { MODELS, useStore } from "@/store/useStore";
 import { PageHeader } from "@/components/PageHeader";
 import { TEMPLATES } from "@/templates";
@@ -12,17 +12,8 @@ export default function SettingsPage() {
   const library = useStore((s) => s.library);
   const restoreBackup = useStore((s) => s.restoreBackup);
 
-  const [draftKey, setDraftKey] = useState(settings.apiKey);
-  const [showKey, setShowKey] = useState(false);
-  const [savedFlash, setSavedFlash] = useState(false);
   const [backupMsg, setBackupMsg] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-
-  const saveKey = () => {
-    setSettings({ apiKey: draftKey.trim() });
-    setSavedFlash(true);
-    setTimeout(() => setSavedFlash(false), 1600);
-  };
 
   const exportBackup = () => {
     const data = { app: "resume-studio-ai", version: 3, exportedAt: new Date().toISOString(), master, library, rules: settings.rules };
@@ -55,75 +46,29 @@ export default function SettingsPage() {
       <PageHeader
         eyebrow="Settings"
         title="Configure once, tailor forever"
-        description="Your API key, template, and formatting rules. Stored only in this browser."
+        description="Model, template, formatting rules, and backups."
       />
 
       <div className="canvas" style={{ maxWidth: 680 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          {/* API key */}
+          {/* Claude */}
           <section className="panel">
             <div className="panel-head">
               <Lock size={15} style={{ color: "var(--accent)", flexShrink: 0 }} />
-              <h3>Anthropic API key</h3>
+              <h3>Claude</h3>
+              <span className="sub">Calls go through this app's server; the Anthropic key is read from <code>ANTHROPIC_API_KEY</code>.</span>
             </div>
             <div className="panel-pad">
-              <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--ink-2)", lineHeight: 1.55 }}>
-                Get one at{" "}
-                <a
-                  href="https://console.anthropic.com/"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ color: "var(--accent)", textDecoration: "underline" }}
-                >
-                  console.anthropic.com
-                </a>
-                . Stored locally — never sent anywhere except directly to Anthropic.
-              </p>
-              <div style={{ display: "flex", gap: 10 }}>
-                <div style={{ position: "relative", flex: 1 }}>
-                  <input
-                    className="field-native"
-                    style={{ paddingRight: 44, fontFamily: "var(--font-mono)", fontSize: 12 }}
-                    type={showKey ? "text" : "password"}
-                    value={draftKey}
-                    onChange={(e) => setDraftKey(e.target.value)}
-                    placeholder="sk-ant-…"
-                    onKeyDown={(e) => { if (e.key === "Enter") saveKey(); }}
-                  />
-                  <button
-                    onClick={() => setShowKey((v) => !v)}
-                    style={{
-                      position: "absolute",
-                      inset: "0 0 0 auto",
-                      width: 42,
-                      display: "grid",
-                      placeItems: "center",
-                      color: "var(--ink-3)",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
-                  </button>
-                </div>
-                <button onClick={saveKey} className="btn btn-gold btn-sm">
-                  <Save size={14} /> {savedFlash ? "Saved!" : "Save"}
-                </button>
-              </div>
-
-              <div style={{ marginTop: 20 }}>
-                <label className="field-label">Model</label>
-                <select
-                  className="field-native"
-                  value={settings.model}
-                  onChange={(e) => setSettings({ model: e.target.value })}
-                >
-                  {MODELS.map((m) => (
-                    <option key={m.id} value={m.id}>{m.label}</option>
-                  ))}
-                </select>
-              </div>
+              <label className="field-label">Model</label>
+              <select
+                className="field-native"
+                value={settings.model}
+                onChange={(e) => setSettings({ model: e.target.value })}
+              >
+                {MODELS.map((m) => (
+                  <option key={m.id} value={m.id}>{m.label}</option>
+                ))}
+              </select>
             </div>
           </section>
 
@@ -221,9 +166,6 @@ export default function SettingsPage() {
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) importBackup(f); }}
               />
               {backupMsg && <span style={{ fontSize: 12.5, color: "var(--ink-2)" }}>{backupMsg}</span>}
-              <span style={{ fontSize: 11.5, color: "var(--ink-3)", width: "100%" }}>
-                Your API key is not included in backups.
-              </span>
             </div>
           </section>
 

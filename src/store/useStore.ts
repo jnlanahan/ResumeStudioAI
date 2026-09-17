@@ -11,6 +11,9 @@ import type {
   TailoredResume,
 } from "@/types";
 import { newId } from "@/lib/utils";
+import { DEFAULT_MODEL, MODEL_IDS } from "@/lib/models";
+
+export { DEFAULT_MODEL, MODELS } from "@/lib/models";
 
 interface AppState {
   master: MasterResume;
@@ -45,16 +48,9 @@ interface AppState {
   renameTailored: (id: string, label: string) => void;
 
   setSettings: (patch: Partial<AppSettings>) => void;
-  /** Restore from a backup file. The API key is never part of a backup. */
+  /** Restore from a backup file. */
   restoreBackup: (data: { master: MasterResume; library: TailoredResume[]; rules?: AppSettings["rules"] }) => void;
 }
-
-export const DEFAULT_MODEL = "claude-opus-5";
-export const MODELS = [
-  { id: "claude-opus-5", label: "Opus 5 — best quality (recommended)" },
-  { id: "claude-sonnet-5", label: "Sonnet 5 — faster, cheaper" },
-  { id: "claude-haiku-4-5", label: "Haiku 4.5 — fastest" },
-];
 
 export const blankMaster = (): MasterResume => ({
   contact: {
@@ -76,7 +72,6 @@ export const blankMaster = (): MasterResume => ({
 });
 
 const defaultSettings = (): AppSettings => ({
-  apiKey: "",
   model: DEFAULT_MODEL,
   template: "classic",
   rules: {
@@ -304,14 +299,16 @@ export const useStore = create<AppState>()(
     }),
     {
       name: "resume-studio-ai-v2",
-      version: 3,
+      version: 4,
       // Server renders a blank store; the client rehydrates after mount (see app/(app)/layout.tsx).
       skipHydration: true,
       migrate: (persisted, version) => {
-        const state = persisted as Partial<AppState>;
-        if (version < 3) {
-          const settings = { ...defaultSettings(), ...(state.settings ?? {}) };
-          if (!MODELS.some((m) => m.id === settings.model)) settings.model = DEFAULT_MODEL;
+        const state = persisted as Partial<AppState> & { settings?: AppSettings & { apiKey?: string } };
+        if (version < 4) {
+          const { apiKey: _dropped, ...rest } = state.settings ?? ({} as AppSettings & { apiKey?: string });
+          void _dropped; // v4: the Anthropic key moved to the server (ANTHROPIC_API_KEY)
+          const settings: AppSettings = { ...defaultSettings(), ...rest };
+          if (!(MODEL_IDS as readonly string[]).includes(settings.model)) settings.model = DEFAULT_MODEL;
           return {
             ...state,
             master: normalizeMaster(state.master),

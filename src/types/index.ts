@@ -105,7 +105,6 @@ export interface TailoredResume {
 }
 
 export interface AppSettings {
-  apiKey: string;
   model: string;
   template: TemplateId;
   rules: FormatRules;
